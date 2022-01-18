@@ -457,6 +457,30 @@ class Psbt {
         .catch(reject);
     });
   }
+  getHashAndSigType(inputIndex,
+    publicKey,
+    sighashTypes = [transaction_1.Transaction.SIGHASH_ALL],){
+      if (!publicKey)
+      throw new Error('Need Signer to sign input');
+    const { hash, sighashType } = getHashAndSighashType(
+      this.data.inputs,
+      inputIndex,
+      publicKey,
+      this.__CACHE,
+      sighashTypes,
+    );
+    return {hash, sighashType};
+  }
+  encodeAndUpdateInput(sgn, pubKey, sighashType, inputIndex){
+    const partialSig = [
+      {
+        pubkey: pubKey,
+        signature: bscript.signature.encode(sgn, sighashType),
+      },
+    ];
+    this.data.updateInput(inputIndex, { partialSig });
+    return this;
+  }
   signAllInputs(
     keyPair,
     sighashTypes = [transaction_1.Transaction.SIGHASH_ALL],
